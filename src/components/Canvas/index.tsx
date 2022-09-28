@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import { useAtom } from "jotai";
+import { brushAtom } from "state/Tools";
 
 interface MousePosition {
   x: number;
@@ -7,10 +9,11 @@ interface MousePosition {
 
 export const Canvas: React.FC = () => {
   const canvasRef = useRef(null!);
+  const [brush] = useAtom(brushAtom);
   const getContext = (): CanvasRenderingContext2D => {
     const canvas: any = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 10;
+    ctx.lineWidth = brush.size / 10;
     ctx.strokeStyle = "red";
     ctx.fillStyle = "red";
     ctx.shadowBlur = 2;

@@ -20,7 +20,7 @@ module.exports = {
   },
   plugins: ["react", "@typescript-eslint", "unused-imports"],
   rules: {
-    "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
+    "no-unused-vars": "off",
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [
       "warn",
@@ -29,6 +29,13 @@ module.exports = {
         varsIgnorePattern: "^_",
         args: "after-used",
         argsIgnorePattern: "^_",
+      },
+    ],
+    "react/self-closing-comp": [
+      "error",
+      {
+        component: true,
+        html: true,
       },
     ],
   },
