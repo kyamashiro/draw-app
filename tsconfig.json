@@ -19,9 +19,16 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "baseUrl": "src"
   },
-  "include": [
-    "src"
+  "exclude": [
+    "node_modules"
   ],
-  "types": ["bun-types"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "types": [
+    "bun-types"
+  ]
 }
