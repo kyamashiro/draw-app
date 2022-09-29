@@ -9,15 +9,15 @@ interface MousePosition {
 
 export const Canvas: React.FC = () => {
   const canvasRef = useRef(null!);
-  const [brush] = useAtom(brushAtom);
+  const [{ size, color }] = useAtom(brushAtom);
   const getContext = (): CanvasRenderingContext2D => {
     const canvas: any = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    ctx.lineWidth = brush.size / 10;
-    ctx.strokeStyle = "red";
-    ctx.fillStyle = "red";
+    ctx.lineWidth = size / 10;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
     ctx.shadowBlur = 2;
-    ctx.shadowColor = "red";
+    ctx.shadowColor = color;
     return ctx;
   };
 
