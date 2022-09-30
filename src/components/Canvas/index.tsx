@@ -77,6 +77,16 @@ export const Canvas: React.FC = () => {
     };
   };
 
+  document.addEventListener("clearCanvas", () => {
+    clearCanvas();
+  });
+
+  const clearCanvas = () => {
+    const canvas: any = canvasRef.current;
+    const ctx = getContext();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
   return (
     <canvas
       ref={canvasRef}
