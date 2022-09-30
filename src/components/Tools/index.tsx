@@ -1,7 +1,8 @@
-import { Box, Button, Stack } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
 import React from "react";
 import { Brush } from "components/Tools/Brush";
 import { ColorPicker } from "components/Tools/ColorPicker";
+import { ClearButton } from "components/Tools/ClearButton";
 
 export const Tools: React.FC = () => {
   return (
@@ -22,15 +23,7 @@ export const Tools: React.FC = () => {
         <ColorPicker />
       </Box>
       <Box>
-        <Button
-          size={"sm"}
-          width={"100%"}
-          onClick={() => {
-            document.dispatchEvent(new CustomEvent("clearCanvas"));
-          }}
-        >
-          クリア
-        </Button>
+        <ClearButton />
       </Box>
     </Stack>
   );
