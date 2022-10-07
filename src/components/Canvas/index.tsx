@@ -1,31 +1,41 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { brushAtom } from "state/Tools";
+import { useUndo } from "components/Canvas/useUndo";
+import { Tools } from "components/Tools";
+import { Flex } from "@chakra-ui/react";
 
 interface MousePosition {
   x: number;
   y: number;
 }
 
+// eslint-disable-next-line react/display-name
 export const Canvas: React.FC = () => {
-  const canvasRef = useRef(null!);
   const [{ size, color }] = useAtom(brushAtom);
-  const getContext = (): CanvasRenderingContext2D => {
-    const canvas: any = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.lineWidth = size / 10;
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.shadowBlur = 2;
-    ctx.shadowColor = color;
-    return ctx;
-  };
-
+  const ctxRef = useRef<CanvasRenderingContext2D>(null!);
+  const { undo, redo, snapshot, clear, isDisableUndo, isDisableRedo } =
+    useUndo();
   const [isMouseDown, setIsMouseDown] = useState(false);
   const points: MousePosition[] = [];
   let beginPoint: MousePosition | null = null;
 
+  useEffect(() => {
+    ctxRef.current.lineWidth = size / 10;
+    ctxRef.current.strokeStyle = color;
+    ctxRef.current.fillStyle = color;
+    ctxRef.current.shadowBlur = 2;
+    ctxRef.current.shadowColor = color;
+  }, [color, size]);
+
+  // 初回のみ実行
+  useEffect(() => {
+    console.log("init");
+    snapshot(ctxRef.current);
+  }, []);
+
   const startDrawing = () => {
+    snapshot(ctxRef.current);
     setIsMouseDown(true);
   };
 
@@ -36,7 +46,7 @@ export const Canvas: React.FC = () => {
   const drawing = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (!isMouseDown) return;
 
-    const { x, y } = getMousePosition(canvasRef.current, e);
+    const { x, y } = getMousePosition(ctxRef.current.canvas, e);
     points.push({ x, y });
     if (points.length > 3) {
       const lastTwoPoints = points.slice(-2);
@@ -47,10 +57,9 @@ export const Canvas: React.FC = () => {
       };
 
       if (beginPoint) {
-        const ctx = getContext();
-        ctx.beginPath();
-        ctx.moveTo(beginPoint.x, beginPoint.y);
-        ctx.bezierCurveTo(
+        ctxRef.current.beginPath();
+        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
+        ctxRef.current.bezierCurveTo(
           beginPoint.x,
           beginPoint.y,
           controlPoint.x,
@@ -58,8 +67,8 @@ export const Canvas: React.FC = () => {
           endPoint.x,
           endPoint.y
         );
-        ctx.stroke();
-        ctx.closePath();
+        ctxRef.current.stroke();
+        ctxRef.current.closePath();
       }
       beginPoint = endPoint;
     }
@@ -77,28 +86,36 @@ export const Canvas: React.FC = () => {
     };
   };
 
-  document.addEventListener("clearCanvas", () => {
-    clearCanvas();
-  });
-
-  const clearCanvas = () => {
-    const canvas: any = canvasRef.current;
-    const ctx = getContext();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
   return (
-    <canvas
-      ref={canvasRef}
-      width={`${window.screen.width}px`}
-      height={`${window.screen.height}px`}
-      style={{
-        border: "1px solid black",
-        cursor: "crosshair",
-      }}
-      onMouseDown={() => startDrawing()}
-      onMouseUp={() => endDrawing()}
-      onMouseMove={(e) => drawing(e)}
-    />
+    <Flex alignItems={"center"}>
+      <Tools
+        ctx={ctxRef.current}
+        handlers={{
+          undo: () => undo(ctxRef.current),
+          redo: () => redo(ctxRef.current),
+          clear: () => clear(ctxRef.current),
+          isDisableUndo,
+          isDisableRedo,
+        }}
+      />
+      <canvas
+        ref={(canvasElement: HTMLCanvasElement) => {
+          if (canvasElement) {
+            ctxRef.current = canvasElement.getContext(
+              "2d"
+            ) as CanvasRenderingContext2D;
+          }
+        }}
+        width={`${window.screen.width}px`}
+        height={`${window.screen.height}px`}
+        style={{
+          border: "1px solid black",
+          cursor: "crosshair",
+        }}
+        onMouseDown={() => startDrawing()}
+        onMouseUp={() => endDrawing()}
+        onMouseMove={(e) => drawing(e)}
+      />
+    </Flex>
   );
 };

@@ -3,8 +3,18 @@ import React from "react";
 import { Brush } from "components/Tools/Brush";
 import { ColorPicker } from "components/Tools/ColorPicker";
 import { ClearButton } from "components/Tools/ClearButton";
+import { Control } from "components/Tools/Control";
+import { UseUndo } from "components/Canvas/useUndo";
 
-export const Tools: React.FC = () => {
+interface Props {
+  ctx: CanvasRenderingContext2D;
+  handlers: Omit<UseUndo, "snapshot">;
+}
+
+export const Tools: React.FC<Props> = ({
+  ctx,
+  handlers: { undo, redo, clear, isDisableUndo, isDisableRedo },
+}) => {
   return (
     <Stack
       w="150px"
@@ -23,7 +33,15 @@ export const Tools: React.FC = () => {
         <ColorPicker />
       </Box>
       <Box>
-        <ClearButton />
+        <Control
+          undo={() => undo(ctx)}
+          redo={() => redo(ctx)}
+          isDisableUndo={isDisableUndo}
+          isDisableRedo={isDisableRedo}
+        />
+      </Box>
+      <Box>
+        <ClearButton onClick={() => clear(ctx)} />
       </Box>
     </Stack>
   );
