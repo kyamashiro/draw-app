@@ -9,3 +9,5 @@ export const brushAtom = atom({
   size: 50,
   color: INITIAL_COLOR,
 });
+
+export const zoomAtom = atom(1.0);

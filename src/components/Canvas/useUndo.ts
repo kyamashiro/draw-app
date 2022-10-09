@@ -1,29 +1,28 @@
 import { useState } from "react";
 
 export interface UseUndo {
-  undo: (ctx: CanvasRenderingContext2D) => void;
-  redo: (ctx: CanvasRenderingContext2D) => void;
+  undo: () => void;
+  redo: () => void;
   snapshot: (ctx: CanvasRenderingContext2D) => void;
-  clear: (ctx: CanvasRenderingContext2D) => void;
+  clear: () => void;
   isDisableUndo: boolean;
   isDisableRedo: boolean;
 }
 
-type Props = () => UseUndo;
+type Props = (ctx: CanvasRenderingContext2D) => UseUndo;
 
-export const useUndo: Props = () => {
+export const useUndo: Props = (ctx) => {
   const [undoDataStack, setUndoDataStack] = useState<ImageData[]>([]);
   const [redoDataStack, setRedoDataStack] = useState<ImageData[]>([]);
 
-  const redoPush = (imageData: ImageData) => {
-    setRedoDataStack([...redoDataStack, imageData]);
-  };
-
-  const undo = (ctx: CanvasRenderingContext2D): void => {
+  const undo = (): void => {
     console.log("undo");
     if (undoDataStack.length <= 0) return;
     // 現在の状態をRedoスタックに保存
-    redoPush(ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height));
+    setRedoDataStack([
+      ...redoDataStack,
+      ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
+    ]);
     const imageData = undoDataStack[undoDataStack.length - 1];
     if (imageData) {
       ctx.putImageData(imageData, 0, 0);
@@ -34,7 +33,7 @@ export const useUndo: Props = () => {
     setUndoDataStack(tmp);
   };
 
-  const redo = (ctx: CanvasRenderingContext2D) => {
+  const redo = () => {
     console.log("redo");
     if (redoDataStack.length <= 0) return;
     const imageData = redoDataStack[redoDataStack.length - 1];
@@ -52,7 +51,7 @@ export const useUndo: Props = () => {
     setRedoDataStack(tmp);
   };
 
-  const clear = (ctx: CanvasRenderingContext2D) => {
+  const clear = () => {
     snapshot(ctx);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };

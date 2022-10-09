@@ -1,21 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useState } from "react";
 import { useAtom } from "jotai";
-import { brushAtom } from "state/Tools";
-import { useUndo } from "components/Canvas/useUndo";
-import { Tools } from "components/Tools";
-import { Flex } from "@chakra-ui/react";
+import { brushAtom, zoomAtom } from "state/Tools";
 
 interface MousePosition {
   x: number;
   y: number;
 }
 
+interface Props {
+  ctxRef: MutableRefObject<CanvasRenderingContext2D>;
+  snapshot: (ctx: CanvasRenderingContext2D) => void;
+}
+
 // eslint-disable-next-line react/display-name
-export const Canvas: React.FC = () => {
+export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
   const [{ size, color }] = useAtom(brushAtom);
-  const ctxRef = useRef<CanvasRenderingContext2D>(null!);
-  const { undo, redo, snapshot, clear, isDisableUndo, isDisableRedo } =
-    useUndo();
+  const [scale] = useAtom(zoomAtom);
+
   const [isMouseDown, setIsMouseDown] = useState(false);
   const points: MousePosition[] = [];
   let beginPoint: MousePosition | null = null;
@@ -87,17 +88,7 @@ export const Canvas: React.FC = () => {
   };
 
   return (
-    <Flex alignItems={"center"}>
-      <Tools
-        ctx={ctxRef.current}
-        handlers={{
-          undo: () => undo(ctxRef.current),
-          redo: () => redo(ctxRef.current),
-          clear: () => clear(ctxRef.current),
-          isDisableUndo,
-          isDisableRedo,
-        }}
-      />
+    <>
       <canvas
         ref={(canvasElement: HTMLCanvasElement) => {
           if (canvasElement) {
@@ -111,11 +102,13 @@ export const Canvas: React.FC = () => {
         style={{
           border: "1px solid black",
           cursor: "crosshair",
+          transformOrigin: "0 0",
+          transform: `scale(${scale})`,
         }}
         onMouseDown={() => startDrawing()}
         onMouseUp={() => endDrawing()}
         onMouseMove={(e) => drawing(e)}
       />
-    </Flex>
+    </>
   );
 };

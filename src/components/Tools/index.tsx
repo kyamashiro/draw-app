@@ -7,12 +7,10 @@ import { Control } from "components/Tools/Control";
 import { UseUndo } from "components/Canvas/useUndo";
 
 interface Props {
-  ctx: CanvasRenderingContext2D;
   handlers: Omit<UseUndo, "snapshot">;
 }
 
 export const Tools: React.FC<Props> = ({
-  ctx,
   handlers: { undo, redo, clear, isDisableUndo, isDisableRedo },
 }) => {
   return (
@@ -27,6 +25,7 @@ export const Tools: React.FC<Props> = ({
       p={4}
       justifyContent={"space-between"}
       flexDirection={"column"}
+      zIndex={1}
     >
       <Box>
         <Brush />
@@ -34,14 +33,14 @@ export const Tools: React.FC<Props> = ({
       </Box>
       <Box>
         <Control
-          undo={() => undo(ctx)}
-          redo={() => redo(ctx)}
+          undo={undo}
+          redo={redo}
           isDisableUndo={isDisableUndo}
           isDisableRedo={isDisableRedo}
         />
       </Box>
       <Box>
-        <ClearButton onClick={() => clear(ctx)} />
+        <ClearButton onClick={clear} />
       </Box>
     </Stack>
   );
