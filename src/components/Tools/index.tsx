@@ -17,7 +17,6 @@ export const Tools: React.FC<Props> = ({
     <Stack
       w="150px"
       h="400px"
-      pos={"absolute"}
       rounded="base"
       boxShadow="md"
       backgroundColor={"white"}

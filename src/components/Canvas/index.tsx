@@ -87,6 +87,13 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
     };
   };
 
+  // useEffect(() => {
+  //   console.log("resize");
+  //   const canvas = ctxRef.current.canvas;
+  //   canvas.width = canvas.clientWidth;
+  //   canvas.height = canvas.clientHeight;
+  // }, [window.innerHeight, window.innerWidth]);
+
   return (
     <>
       <canvas
@@ -104,6 +111,8 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
           cursor: "crosshair",
           transformOrigin: "0 0",
           transform: `scale(${scale})`,
+          width: "100%",
+          height: "100%",
         }}
         onMouseDown={() => startDrawing()}
         onMouseUp={() => endDrawing()}
