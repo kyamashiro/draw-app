@@ -1,11 +1,9 @@
 import React, { useRef } from "react";
 import { Canvas } from "components/Canvas";
-import { Container, Flex, IconButton } from "@chakra-ui/react";
+import { Container, Flex } from "@chakra-ui/react";
 import { Tools } from "components/Tools";
 import { useUndo } from "components/Canvas/useUndo";
-import { SignInScreen } from "components/Auth";
 import { Zoom } from "components/Tools/Zoom";
-import { VscSignIn } from "react-icons/vsc";
 
 const App = () => {
   const ctxRef = useRef<CanvasRenderingContext2D>(null!);
@@ -42,12 +40,6 @@ const App = () => {
           alignSelf={"flex-end"}
         >
           <Zoom />
-        </Flex>
-        <Flex m={4} gap={4} position={"absolute"} zIndex={1}>
-          <IconButton aria-label={"signin"} icon={<VscSignIn />} />
-        </Flex>
-        <Flex m={4} gap={4} position={"absolute"} zIndex={1}>
-          <SignInScreen />
         </Flex>
         <Canvas ctxRef={ctxRef} snapshot={snapshot} />
       </Flex>
