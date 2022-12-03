@@ -17,6 +17,7 @@
     "firebase": "^9.11.0",
     "firebaseui": "^6.0.1",
     "framer-motion": "^7.3.5",
+    "gh-pages": "^4.0.0",
     "jotai": "^1.8.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -44,7 +45,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -63,5 +66,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "homepage": "https://kyamashiro.github.io/draw-app"
 }
