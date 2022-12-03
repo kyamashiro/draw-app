@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/draw-app/static/js/main.fd8ad2fb.js",
+    "main.js": "/draw-app/static/js/main.f52934a7.js",
     "index.html": "/draw-app/index.html",
-    "main.fd8ad2fb.js.map": "/draw-app/static/js/main.fd8ad2fb.js.map"
+    "main.f52934a7.js.map": "/draw-app/static/js/main.f52934a7.js.map"
   },
   "entrypoints": [
-    "static/js/main.fd8ad2fb.js"
+    "static/js/main.f52934a7.js"
   ]
 }
