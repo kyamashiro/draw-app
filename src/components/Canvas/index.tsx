@@ -44,10 +44,39 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
     setIsMouseDown(false);
   };
 
-  const drawing = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const drawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isMouseDown) return;
-
     const { x, y } = getMousePosition(ctxRef.current.canvas, e);
+    points.push({ x, y });
+    if (points.length > 3) {
+      const lastTwoPoints = points.slice(-2);
+      const controlPoint = lastTwoPoints[0];
+      const endPoint = {
+        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
+        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
+      };
+
+      if (beginPoint) {
+        ctxRef.current.beginPath();
+        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
+        ctxRef.current.bezierCurveTo(
+          beginPoint.x,
+          beginPoint.y,
+          controlPoint.x,
+          controlPoint.y,
+          endPoint.x,
+          endPoint.y
+        );
+        ctxRef.current.stroke();
+        ctxRef.current.closePath();
+      }
+      beginPoint = endPoint;
+    }
+  };
+
+  const touchDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isMouseDown) return;
+    const { x, y } = getTouchPosition(ctxRef.current.canvas, e);
     points.push({ x, y });
     if (points.length > 3) {
       const lastTwoPoints = points.slice(-2);
@@ -77,13 +106,29 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
 
   const getMousePosition = (
     canvas: HTMLCanvasElement,
-    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+    e: React.MouseEvent<HTMLCanvasElement>
   ) => {
     const rect = canvas.getBoundingClientRect();
 
     return {
       x: ((e.clientX - rect.left) / (rect.right - rect.left)) * canvas.width,
       y: ((e.clientY - rect.top) / (rect.bottom - rect.top)) * canvas.height,
+    };
+  };
+
+  const getTouchPosition = (
+    canvas: HTMLCanvasElement,
+    e: React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    const rect = canvas.getBoundingClientRect();
+
+    return {
+      x:
+        ((e.changedTouches[0].clientX - rect.left) / (rect.right - rect.left)) *
+        canvas.width,
+      y:
+        ((e.changedTouches[0].clientY - rect.top) / (rect.bottom - rect.top)) *
+        canvas.height,
     };
   };
 
@@ -117,6 +162,9 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
         onMouseDown={() => startDrawing()}
         onMouseUp={() => endDrawing()}
         onMouseMove={(e) => drawing(e)}
+        onTouchStart={() => startDrawing()}
+        onTouchEnd={() => endDrawing()}
+        onTouchMove={(e) => touchDrawing(e)}
       />
     </>
   );
