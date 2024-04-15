@@ -7,7 +7,7 @@ export const Canvas: React.FC = () => {
   const height = 2900;
   const svgRef = useRef<SVGSVGElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
-  // const [points, setPoints] = useState<Points>([]);
+  const pointsRef = useRef<Points>([]);
 
   // @ts-ignore
   const [currentPath, setCurrentPath] = useState<Selection<
@@ -39,7 +39,7 @@ export const Canvas: React.FC = () => {
     setCurrentPath(null);
     pointsRef.current = [];
   };
-  const pointsRef = useRef<Points>([]);
+
   const drawing = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isMouseDown) return;
     if (!svgRef.current) return;
