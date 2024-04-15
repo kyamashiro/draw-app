@@ -7,7 +7,7 @@ export const Canvas: React.FC = () => {
   const height = 2900;
   const svgRef = useRef<SVGSVGElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
-  const [points, setPoints] = useState<Points>([]);
+  // const [points, setPoints] = useState<Points>([]);
 
   // @ts-ignore
   const [currentPath, setCurrentPath] = useState<Selection<
@@ -22,7 +22,7 @@ export const Canvas: React.FC = () => {
     setIsMouseDown(true);
     if (!svgRef.current) return;
     const [x, y] = d3.pointer(e);
-    setPoints((prev) => [...prev, [x, y]]);
+    pointsRef.current.push([x, y]);
     setCurrentPath(
       d3
         .select<SVGSVGElement, unknown>(svgRef.current)
@@ -37,15 +37,16 @@ export const Canvas: React.FC = () => {
   const endDrawing = () => {
     setIsMouseDown(false);
     setCurrentPath(null);
-    setPoints([]);
   };
-
+  const pointsRef = useRef<Points>([]);
   const drawing = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isMouseDown) return;
     if (!svgRef.current) return;
     const [x, y] = d3.pointer(e);
-    setPoints((prev) => [...prev, [x, y]]);
-    currentPath.datum(points).attr("d", d3.line().curve(d3.curveBasis));
+    pointsRef.current.push([x, y]);
+    currentPath
+      .datum(pointsRef.current)
+      .attr("d", d3.line().curve(d3.curveBasis));
   };
 
   return (
