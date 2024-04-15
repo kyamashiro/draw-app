@@ -1,42 +1,26 @@
-import React, { MutableRefObject, useEffect, useState } from "react";
-import { useAtom } from "jotai";
-import { brushAtom, zoomAtom } from "state/Tools";
+import React, { useRef, useState } from "react";
+import * as d3 from "d3";
 
 interface MousePosition {
   x: number;
   y: number;
 }
 
-interface Props {
-  ctxRef: MutableRefObject<CanvasRenderingContext2D>;
-  snapshot: (ctx: CanvasRenderingContext2D) => void;
-}
-
-// eslint-disable-next-line react/display-name
-export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
-  const [{ size, color }] = useAtom(brushAtom);
-  const [scale] = useAtom(zoomAtom);
-
+export const Canvas: React.FC = () => {
+  const height = 2900;
+  const svgRef = useRef<SVGSVGElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const points: MousePosition[] = [];
-  let beginPoint: MousePosition | null = null;
-
-  useEffect(() => {
-    ctxRef.current.lineWidth = size / 10;
-    ctxRef.current.strokeStyle = color;
-    ctxRef.current.fillStyle = color;
-    ctxRef.current.shadowBlur = 2;
-    ctxRef.current.shadowColor = color;
-  }, [color, size]);
-
-  // 初回のみ実行
-  useEffect(() => {
-    console.log("init");
-    snapshot(ctxRef.current);
-  }, []);
+  // @ts-ignore
+  const [currentPath, setCurrentPath] = useState<Selection<
+    SVGSVGElement | null,
+    unknown,
+    HTMLElement,
+    any
+  > | null>(null);
+  const color = "rgba(0, 0, 0, 1)";
 
   const startDrawing = () => {
-    snapshot(ctxRef.current);
     setIsMouseDown(true);
   };
 
@@ -44,128 +28,72 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
     setIsMouseDown(false);
   };
 
-  const drawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isMouseDown) return;
-    const { x, y } = getMousePosition(ctxRef.current.canvas, e);
-    points.push({ x, y });
-    if (points.length > 3) {
-      const lastTwoPoints = points.slice(-2);
-      const controlPoint = lastTwoPoints[0];
-      const endPoint = {
-        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
-        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
-      };
-
-      if (beginPoint) {
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
-        ctxRef.current.bezierCurveTo(
-          beginPoint.x,
-          beginPoint.y,
-          controlPoint.x,
-          controlPoint.y,
-          endPoint.x,
-          endPoint.y
-        );
-        ctxRef.current.stroke();
-        ctxRef.current.closePath();
-      }
-      beginPoint = endPoint;
-    }
-  };
-
-  const touchDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isMouseDown) return;
-    const { x, y } = getTouchPosition(ctxRef.current.canvas, e);
-    points.push({ x, y });
-    if (points.length > 3) {
-      const lastTwoPoints = points.slice(-2);
-      const controlPoint = lastTwoPoints[0];
-      const endPoint = {
-        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
-        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
-      };
-
-      if (beginPoint) {
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
-        ctxRef.current.bezierCurveTo(
-          beginPoint.x,
-          beginPoint.y,
-          controlPoint.x,
-          controlPoint.y,
-          endPoint.x,
-          endPoint.y
-        );
-        ctxRef.current.stroke();
-        ctxRef.current.closePath();
-      }
-      beginPoint = endPoint;
-    }
-  };
-
   const getMousePosition = (
-    canvas: HTMLCanvasElement,
-    e: React.MouseEvent<HTMLCanvasElement>
+    svg: SVGSVGElement,
+    e: React.MouseEvent<SVGSVGElement>
   ) => {
-    const rect = canvas.getBoundingClientRect();
+    const rect = svg.getBoundingClientRect();
 
     return {
-      x: ((e.clientX - rect.left) / (rect.right - rect.left)) * canvas.width,
-      y: ((e.clientY - rect.top) / (rect.bottom - rect.top)) * canvas.height,
+      x: ((e.clientX - rect.left) / (rect.right - rect.left)) * svg.clientWidth,
+      y: ((e.clientY - rect.top) / (rect.bottom - rect.top)) * svg.clientHeight,
     };
   };
 
-  const getTouchPosition = (
-    canvas: HTMLCanvasElement,
-    e: React.TouchEvent<HTMLCanvasElement>
-  ) => {
-    const rect = canvas.getBoundingClientRect();
+  const [transformedObj, setTransformedObj] = useState<any>([]);
 
-    return {
-      x:
-        ((e.changedTouches[0].clientX - rect.left) / (rect.right - rect.left)) *
-        canvas.width,
-      y:
-        ((e.changedTouches[0].clientY - rect.top) / (rect.bottom - rect.top)) *
-        canvas.height,
-    };
+  const drawing = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isMouseDown) return;
+    if (!svgRef.current) return;
+    const { x, y } = getMousePosition(svgRef.current, e);
+    points.push({ x, y });
+
+    if (!currentPath) {
+      setCurrentPath(
+        d3
+          .select<SVGSVGElement, unknown>(svgRef.current)
+          .append("path")
+          .style("stroke-width", 10)
+          .style("fill", "none")
+          .attr("stroke", color)
+          .style("stroke-linecap", "round")
+      );
+    }
+    // currentPath.datum(points).attr("d", d3.line().curve(d3.curveBasis));
+
+    let path = `M${points[0].x},${points[0].y}`;
+
+    for (let i = 1; i < points.length; i++) {
+      const { x, y } = points[i];
+      path += `L${x},${y}`;
+    }
+
+    setTransformedObj([...transformedObj, path]);
   };
-
-  // useEffect(() => {
-  //   console.log("resize");
-  //   const canvas = ctxRef.current.canvas;
-  //   canvas.width = canvas.clientWidth;
-  //   canvas.height = canvas.clientHeight;
-  // }, [window.innerHeight, window.innerWidth]);
 
   return (
-    <>
-      <canvas
-        ref={(canvasElement: HTMLCanvasElement) => {
-          if (canvasElement) {
-            ctxRef.current = canvasElement.getContext(
-              "2d"
-            ) as CanvasRenderingContext2D;
-          }
-        }}
-        width={`${window.screen.width}px`}
-        height={`${window.screen.height}px`}
-        style={{
-          border: "1px solid black",
-          cursor: "crosshair",
-          transformOrigin: "0 0",
-          transform: `scale(${scale})`,
-          width: "100%",
-          height: "100%",
-        }}
+    <div className="container">
+      <svg
+        ref={svgRef}
+        width={1000}
+        height={height}
         onMouseDown={() => startDrawing()}
         onMouseUp={() => endDrawing()}
         onMouseMove={(e) => drawing(e)}
-        onTouchStart={() => startDrawing()}
-        onTouchEnd={() => endDrawing()}
-        onTouchMove={(e) => touchDrawing(e)}
-      />
-    </>
+      >
+        {transformedObj.map((d: any, i: any) => {
+          return (
+            <path
+              key={i}
+              stroke={color}
+              strokeWidth={10}
+              fill="none"
+              strokeLinecap="round"
+              d={d}
+            />
+          );
+        })}
+      </svg>
+    </div>
   );
 };

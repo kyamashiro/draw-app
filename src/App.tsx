@@ -41,7 +41,7 @@ const App = () => {
         >
           <Zoom />
         </Flex>
-        <Canvas ctxRef={ctxRef} snapshot={snapshot} />
+        <Canvas />
       </Flex>
     </Container>
   );
