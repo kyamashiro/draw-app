@@ -37,6 +37,7 @@ export const Canvas: React.FC = () => {
   const endDrawing = () => {
     setIsMouseDown(false);
     setCurrentPath(null);
+    pointsRef.current = [];
   };
   const pointsRef = useRef<Points>([]);
   const drawing = (e: React.MouseEvent<SVGSVGElement>) => {
