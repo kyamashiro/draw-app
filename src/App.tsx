@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Canvas } from "components/Canvas";
-import { Container, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import { Tools } from "components/Tools";
 import { useUndo } from "components/Canvas/useUndo";
 import { Zoom } from "components/Tools/Zoom";
@@ -12,38 +12,20 @@ const App = () => {
   );
 
   return (
-    <Container maxH={window.innerHeight} maxW={window.innerWidth}>
-      <Flex>
-        <Flex
-          position={"absolute"}
-          alignSelf={"center"}
-          alignItems={"center"}
-          align={"center"}
-          alignContent={"center"}
-        >
-          <Tools
-            handlers={{
-              undo,
-              redo,
-              clear,
-              isDisableUndo,
-              isDisableRedo,
-            }}
-          />
-        </Flex>
-        <Flex
-          zIndex={1}
-          m={4}
-          gap={4}
-          flexDirection={"row"}
-          position={"absolute"}
-          alignSelf={"flex-end"}
-        >
-          <Zoom />
-        </Flex>
-        <Canvas ctxRef={ctxRef} snapshot={snapshot} />
-      </Flex>
-    </Container>
+    <Flex>
+      <Tools
+        handlers={{
+          undo,
+          redo,
+          clear,
+          isDisableUndo,
+          isDisableRedo,
+        }}
+      />
+
+      <Zoom />
+      <Canvas ctxRef={ctxRef} snapshot={snapshot} />
+    </Flex>
   );
 };
 
