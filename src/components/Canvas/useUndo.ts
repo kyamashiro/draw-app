@@ -3,7 +3,7 @@ import { useState } from "react";
 export interface UseUndo {
   undo: () => void;
   redo: () => void;
-  snapshot: (ctx: CanvasRenderingContext2D) => void;
+  snapshot: (path: Path2D) => void;
   clear: () => void;
   isDisableUndo: boolean;
   isDisableRedo: boolean;
@@ -12,56 +12,41 @@ export interface UseUndo {
 type Props = (ctx: CanvasRenderingContext2D) => UseUndo;
 
 export const useUndo: Props = (ctx) => {
-  const [undoDataStack, setUndoDataStack] = useState<ImageData[]>([]);
-  const [redoDataStack, setRedoDataStack] = useState<ImageData[]>([]);
+  const [undoDataStack, setUndoDataStack] = useState<Path2D[]>([]);
+  const [redoDataStack, setRedoDataStack] = useState<Path2D[]>([]);
 
   const undo = (): void => {
     console.log("undo");
     if (undoDataStack.length <= 0) return;
-    // 現在の状態をRedoスタックに保存
-    setRedoDataStack([
-      ...redoDataStack,
-      ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    ]);
-    const imageData = undoDataStack[undoDataStack.length - 1];
-    if (imageData) {
-      ctx.putImageData(imageData, 0, 0);
-    }
-    // Undoスタックから削除
-    const tmp = undoDataStack;
-    tmp.pop();
-    setUndoDataStack(tmp);
+
+    const lastPath = undoDataStack.slice(-1)[0];
+    setRedoDataStack((prevState) => [...prevState, lastPath]);
+    const newUndoDataStack = undoDataStack.slice(0, -1);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    newUndoDataStack.forEach((path) => {
+      ctx.stroke(path);
+    });
+    setUndoDataStack(newUndoDataStack);
   };
 
   const redo = () => {
     console.log("redo");
     if (redoDataStack.length <= 0) return;
-    const imageData = redoDataStack[redoDataStack.length - 1];
-    // 現在の状態をUndoスタックに保存
-    setUndoDataStack([
-      ...undoDataStack,
-      ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    ]);
 
-    if (imageData) {
-      ctx.putImageData(imageData, 0, 0);
-    }
-    const tmp = redoDataStack;
-    tmp.pop();
-    setRedoDataStack(tmp);
+    const lastUndoOperation = redoDataStack.slice(-1)[0];
+    ctx.stroke(lastUndoOperation);
+    const newRedoDataStack = redoDataStack.slice(0, -1);
+    setRedoDataStack(newRedoDataStack);
+    setUndoDataStack((prevState) => [...prevState, lastUndoOperation]);
   };
 
   const clear = () => {
-    snapshot(ctx);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  const snapshot = (ctx: CanvasRenderingContext2D): void => {
+  const snapshot = (path: Path2D): void => {
     console.log("snapshot");
-    setUndoDataStack([
-      ...undoDataStack,
-      ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    ]);
+    setUndoDataStack((prevState) => [...prevState, path]);
   };
 
   return {
@@ -69,7 +54,7 @@ export const useUndo: Props = (ctx) => {
     redo,
     snapshot,
     clear,
-    isDisableUndo: undoDataStack.length === 1,
+    isDisableUndo: undoDataStack.length === 0,
     isDisableRedo: redoDataStack.length === 0,
   };
 };

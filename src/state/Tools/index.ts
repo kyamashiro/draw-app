@@ -6,7 +6,7 @@ export interface Brush {
   color: Color;
 }
 export const brushAtom = atom({
-  size: 50,
+  size: 20,
   color: INITIAL_COLOR,
 });
 

@@ -22,7 +22,7 @@ export const Control: React.FC<Props> = ({
           icon={<ArrowBackIcon />}
           aria-label={"undo"}
           onClick={undo}
-          disabled={isDisableUndo}
+          isDisabled={isDisableUndo}
         />
       </Box>
       <Box>
@@ -30,7 +30,7 @@ export const Control: React.FC<Props> = ({
           icon={<ArrowForwardIcon />}
           aria-label={"redo"}
           onClick={redo}
-          disabled={isDisableRedo}
+          isDisabled={isDisableRedo}
         />
       </Box>
     </Flex>

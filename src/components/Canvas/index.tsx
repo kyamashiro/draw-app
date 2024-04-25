@@ -2,107 +2,86 @@ import React, { MutableRefObject, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { brushAtom, zoomAtom } from "state/Tools";
 
-interface MousePosition {
+export interface MousePosition {
   x: number;
   y: number;
 }
 
 interface Props {
   ctxRef: MutableRefObject<CanvasRenderingContext2D>;
-  snapshot: (ctx: CanvasRenderingContext2D) => void;
+  snapshot: (path: Path2D) => void;
 }
+
+const LEFT_BUTTON = 0;
+const RIGHT_BUTTON = 2;
+const CANVAS_WIDTH = 3000;
+const CANVAS_HEIGHT = 3000;
+
+export const drawLine = (
+  points: MousePosition[],
+  beginPoint: MousePosition | undefined,
+  ctx: CanvasRenderingContext2D,
+  path: Path2D
+): MousePosition | undefined => {
+  if (points.length > 3) {
+    const lastTwoPoints = points.slice(-2);
+    const controlPoint = lastTwoPoints[0];
+    const endPoint = {
+      x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
+      y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
+    };
+
+    if (beginPoint) {
+      ctx.beginPath();
+      ctx.moveTo(beginPoint.x, beginPoint.y);
+      ctx.bezierCurveTo(
+        beginPoint.x,
+        beginPoint.y,
+        controlPoint.x,
+        controlPoint.y,
+        endPoint.x,
+        endPoint.y
+      );
+      path.moveTo(beginPoint.x, beginPoint.y);
+      path.bezierCurveTo(
+        beginPoint.x,
+        beginPoint.y,
+        controlPoint.x,
+        controlPoint.y,
+        endPoint.x,
+        endPoint.y
+      );
+      ctx.stroke();
+    }
+    return endPoint;
+  }
+};
 
 // eslint-disable-next-line react/display-name
 export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
   const [{ size, color }] = useAtom(brushAtom);
   const [scale] = useAtom(zoomAtom);
-
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const points: MousePosition[] = [];
-  let beginPoint: MousePosition | null = null;
+  const [isMouseLeftDown, setIsMouseLeftDown] = useState(false);
+  const [isMouseRightDown, setIsMouseRightDown] = useState(false);
+  const [cursor, setCursor] = useState("crosshair");
+  let points: MousePosition[] = [];
+  let beginPoint: MousePosition | undefined;
+  let path = new Path2D(); // Undo,Redo用
 
   useEffect(() => {
-    ctxRef.current.lineWidth = size / 10;
-    ctxRef.current.strokeStyle = color;
-    ctxRef.current.fillStyle = color;
-    ctxRef.current.shadowBlur = 2;
-    ctxRef.current.shadowColor = color;
-  }, [color, size]);
-
-  // 初回のみ実行
-  useEffect(() => {
-    console.log("init");
-    snapshot(ctxRef.current);
+    // 画面表示時にセンターにスクロール
+    window.scrollTo(screen.width / 2, screen.height / 2);
   }, []);
 
-  const startDrawing = () => {
-    snapshot(ctxRef.current);
-    setIsMouseDown(true);
-  };
-
-  const endDrawing = () => {
-    setIsMouseDown(false);
-  };
-
-  const drawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isMouseDown) return;
-    const { x, y } = getMousePosition(ctxRef.current.canvas, e);
-    points.push({ x, y });
-    if (points.length > 3) {
-      const lastTwoPoints = points.slice(-2);
-      const controlPoint = lastTwoPoints[0];
-      const endPoint = {
-        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
-        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
-      };
-
-      if (beginPoint) {
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
-        ctxRef.current.bezierCurveTo(
-          beginPoint.x,
-          beginPoint.y,
-          controlPoint.x,
-          controlPoint.y,
-          endPoint.x,
-          endPoint.y
-        );
-        ctxRef.current.stroke();
-        ctxRef.current.closePath();
-      }
-      beginPoint = endPoint;
-    }
-  };
-
-  const touchDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isMouseDown) return;
-    const { x, y } = getTouchPosition(ctxRef.current.canvas, e);
-    points.push({ x, y });
-    if (points.length > 3) {
-      const lastTwoPoints = points.slice(-2);
-      const controlPoint = lastTwoPoints[0];
-      const endPoint = {
-        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
-        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2,
-      };
-
-      if (beginPoint) {
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(beginPoint.x, beginPoint.y);
-        ctxRef.current.bezierCurveTo(
-          beginPoint.x,
-          beginPoint.y,
-          controlPoint.x,
-          controlPoint.y,
-          endPoint.x,
-          endPoint.y
-        );
-        ctxRef.current.stroke();
-        ctxRef.current.closePath();
-      }
-      beginPoint = endPoint;
-    }
-  };
+  useEffect(() => {
+    ctxRef.current.lineWidth = size / 3;
+    ctxRef.current.strokeStyle = color;
+    ctxRef.current.fillStyle = color;
+    ctxRef.current.shadowBlur = 0.5;
+    ctxRef.current.shadowColor = color;
+    ctxRef.current.lineJoin = "round";
+    ctxRef.current.lineCap = "round";
+  }, [color, size]);
 
   const getMousePosition = (
     canvas: HTMLCanvasElement,
@@ -116,31 +95,61 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
     };
   };
 
-  const getTouchPosition = (
-    canvas: HTMLCanvasElement,
-    e: React.TouchEvent<HTMLCanvasElement>
-  ) => {
-    const rect = canvas.getBoundingClientRect();
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // 左右マウスを同時に押している場合は何もしない
+    if (isMouseLeftDown || isMouseRightDown) return;
 
-    return {
-      x:
-        ((e.changedTouches[0].clientX - rect.left) / (rect.right - rect.left)) *
-        canvas.width,
-      y:
-        ((e.changedTouches[0].clientY - rect.top) / (rect.bottom - rect.top)) *
-        canvas.height,
-    };
+    const { x, y } = getMousePosition(ctxRef.current.canvas, e);
+    points.push({ x, y });
+
+    if (e.button === LEFT_BUTTON) {
+      setIsMouseLeftDown(true);
+      path = new Path2D();
+    } else if (e.button === RIGHT_BUTTON) {
+      setIsMouseRightDown(true);
+    }
   };
 
-  // useEffect(() => {
-  //   console.log("resize");
-  //   const canvas = ctxRef.current.canvas;
-  //   canvas.width = canvas.clientWidth;
-  //   canvas.height = canvas.clientHeight;
-  // }, [window.innerHeight, window.innerWidth]);
+  const handleMouseUp = () => {
+    if (isMouseLeftDown) {
+      snapshot(path);
+    }
+    setIsMouseLeftDown(false);
+    setIsMouseRightDown(false);
+    setCursor("crosshair");
+    points = [];
+  };
+
+  let previousClientX: number, previousClientY: number;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isMouseLeftDown) {
+      const { x, y } = getMousePosition(ctxRef.current.canvas, e);
+      points.push({ x, y });
+      beginPoint = drawLine(points, beginPoint, ctxRef.current, path);
+    }
+
+    if (isMouseRightDown) {
+      if (previousClientX && previousClientY) {
+        window.scrollBy(
+          previousClientX - e.clientX,
+          previousClientY - e.clientY
+        );
+      }
+      previousClientX = e.clientX;
+      previousClientY = e.clientY;
+    }
+  };
+
+  const handleRightClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    // マウスの左右を同時に押している場合
+    if (isMouseLeftDown) return;
+    setCursor("grabbing");
+  };
 
   return (
-    <>
+    <div>
       <canvas
         ref={(canvasElement: HTMLCanvasElement) => {
           if (canvasElement) {
@@ -149,23 +158,18 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
             ) as CanvasRenderingContext2D;
           }
         }}
-        width={`${window.screen.width}px`}
-        height={`${window.screen.height}px`}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
         style={{
-          border: "1px solid black",
-          cursor: "crosshair",
+          cursor,
           transformOrigin: "0 0",
           transform: `scale(${scale})`,
-          width: "100%",
-          height: "100%",
         }}
-        onMouseDown={() => startDrawing()}
-        onMouseUp={() => endDrawing()}
-        onMouseMove={(e) => drawing(e)}
-        onTouchStart={() => startDrawing()}
-        onTouchEnd={() => endDrawing()}
-        onTouchMove={(e) => touchDrawing(e)}
+        onMouseDown={(e) => handleMouseDown(e)}
+        onMouseUp={() => handleMouseUp()}
+        onMouseMove={(e) => handleMouseMove(e)}
+        onContextMenu={(e) => handleRightClick(e)}
       />
-    </>
+    </div>
   );
 };

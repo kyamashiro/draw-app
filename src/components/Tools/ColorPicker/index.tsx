@@ -24,8 +24,8 @@ const COLORS = {
   orange: "#e67700",
 } as const;
 type HEX = `#${string}`;
-export type Color = typeof COLORS[keyof typeof COLORS] | HEX;
-export const INITIAL_COLOR: Color = COLORS.gray;
+export type Color = (typeof COLORS)[keyof typeof COLORS] | HEX;
+export const INITIAL_COLOR: Color = COLORS.black;
 
 export const ColorPicker = () => {
   const [{ color }, setBrush] = useAtom(brushAtom);
