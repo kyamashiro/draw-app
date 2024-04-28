@@ -30,10 +30,10 @@ export const Tools: React.FC<Props> = ({
         flexDirection={"column"}
         zIndex={1}
       >
-        <Box>
+        <Flex gap={4} flexDirection={"column"}>
           <Brush />
           <ColorPicker />
-        </Box>
+        </Flex>
         <Box>
           <Control
             undo={undo}

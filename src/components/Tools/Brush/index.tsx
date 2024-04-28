@@ -1,46 +1,35 @@
 import React from "react";
-import {
-  Box,
-  Slider,
-  SliderFilledTrack,
-  SliderMark,
-  SliderThumb,
-  SliderTrack,
-} from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { useAtom } from "jotai";
 import { brushAtom } from "state/Tools";
+import { BrushWidthButton } from "./BrushWidthButton";
 
 export const Brush: React.FC = () => {
   const [brush, setBrush] = useAtom(brushAtom);
+  const handleClick = (width: number) => {
+    setBrush((prev) => ({ ...prev, width }));
+  };
+
   return (
-    <>
+    <Flex flexDirection={"column"} gap={4}>
       <Box>線の太さ</Box>
-      <Box pt={6} px={4}>
-        <Slider
-          aria-label="slider-ex-6"
-          min={1}
-          max={100}
-          onChange={(width) => {
-            setBrush((prev) => ({ ...prev, width }));
-          }}
-        >
-          <SliderMark
-            value={brush.width}
-            textAlign="center"
-            bg="blue.500"
-            color="white"
-            mt="-10"
-            ml="-5"
-            w="12"
-          >
-            {brush.width}%
-          </SliderMark>
-          <SliderTrack>
-            <SliderFilledTrack />
-          </SliderTrack>
-          <SliderThumb />
-        </Slider>
-      </Box>
-    </>
+      <Flex justifyContent={"space-between"}>
+        <BrushWidthButton
+          currentWidth={brush.width}
+          size={5}
+          handleClick={() => handleClick(5)}
+        />
+        <BrushWidthButton
+          currentWidth={brush.width}
+          size={10}
+          handleClick={() => handleClick(10)}
+        />
+        <BrushWidthButton
+          currentWidth={brush.width}
+          size={15}
+          handleClick={() => handleClick(15)}
+        />
+      </Flex>
+    </Flex>
   );
 };
