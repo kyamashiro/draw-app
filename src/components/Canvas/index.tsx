@@ -1,15 +1,22 @@
 import React, { MutableRefObject, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { brushAtom, zoomAtom } from "state/Tools";
+import { Color } from "../Tools/ColorPicker";
 
 export interface MousePosition {
   x: number;
   y: number;
 }
 
+export interface LineData {
+  shape: Path2D;
+  color: Color;
+  width: number;
+}
+
 interface Props {
   ctxRef: MutableRefObject<CanvasRenderingContext2D>;
-  snapshot: (path: Path2D) => void;
+  snapshot: (lineData: LineData) => void;
 }
 
 const LEFT_BUTTON = 0;
@@ -21,7 +28,7 @@ export const drawLine = (
   points: MousePosition[],
   beginPoint: MousePosition | undefined,
   ctx: CanvasRenderingContext2D,
-  path: Path2D
+  path: Path2D,
 ): MousePosition | undefined => {
   if (points.length > 3) {
     const lastTwoPoints = points.slice(-2);
@@ -40,7 +47,7 @@ export const drawLine = (
         controlPoint.x,
         controlPoint.y,
         endPoint.x,
-        endPoint.y
+        endPoint.y,
       );
       path.moveTo(beginPoint.x, beginPoint.y);
       path.bezierCurveTo(
@@ -49,7 +56,7 @@ export const drawLine = (
         controlPoint.x,
         controlPoint.y,
         endPoint.x,
-        endPoint.y
+        endPoint.y,
       );
       ctx.stroke();
     }
@@ -59,14 +66,18 @@ export const drawLine = (
 
 // eslint-disable-next-line react/display-name
 export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
-  const [{ size, color }] = useAtom(brushAtom);
+  const [{ width, color }] = useAtom(brushAtom);
   const [scale] = useAtom(zoomAtom);
   const [isMouseLeftDown, setIsMouseLeftDown] = useState(false);
   const [isMouseRightDown, setIsMouseRightDown] = useState(false);
   const [cursor, setCursor] = useState("crosshair");
   let points: MousePosition[] = [];
   let beginPoint: MousePosition | undefined;
-  let path = new Path2D(); // Undo,Redo用
+  const line = {
+    shape: new Path2D(),
+    color,
+    width,
+  };
 
   useEffect(() => {
     // 画面表示時にセンターにスクロール
@@ -74,18 +85,18 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
   }, []);
 
   useEffect(() => {
-    ctxRef.current.lineWidth = size / 3;
+    ctxRef.current.lineWidth = width;
     ctxRef.current.strokeStyle = color;
     ctxRef.current.fillStyle = color;
     ctxRef.current.shadowBlur = 0.5;
     ctxRef.current.shadowColor = color;
     ctxRef.current.lineJoin = "round";
     ctxRef.current.lineCap = "round";
-  }, [color, size]);
+  }, [color, width]);
 
   const getMousePosition = (
     canvas: HTMLCanvasElement,
-    e: React.MouseEvent<HTMLCanvasElement>
+    e: React.MouseEvent<HTMLCanvasElement>,
   ) => {
     const rect = canvas.getBoundingClientRect();
 
@@ -104,7 +115,7 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
 
     if (e.button === LEFT_BUTTON) {
       setIsMouseLeftDown(true);
-      path = new Path2D();
+      line.shape = new Path2D();
     } else if (e.button === RIGHT_BUTTON) {
       setIsMouseRightDown(true);
     }
@@ -112,7 +123,7 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
 
   const handleMouseUp = () => {
     if (isMouseLeftDown) {
-      snapshot(path);
+      snapshot(line);
     }
     setIsMouseLeftDown(false);
     setIsMouseRightDown(false);
@@ -126,14 +137,14 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
     if (isMouseLeftDown) {
       const { x, y } = getMousePosition(ctxRef.current.canvas, e);
       points.push({ x, y });
-      beginPoint = drawLine(points, beginPoint, ctxRef.current, path);
+      beginPoint = drawLine(points, beginPoint, ctxRef.current, line.shape);
     }
 
     if (isMouseRightDown) {
       if (previousClientX && previousClientY) {
         window.scrollBy(
           previousClientX - e.clientX,
-          previousClientY - e.clientY
+          previousClientY - e.clientY,
         );
       }
       previousClientX = e.clientX;
@@ -154,7 +165,7 @@ export const Canvas: React.FC<Props> = ({ ctxRef, snapshot }) => {
         ref={(canvasElement: HTMLCanvasElement) => {
           if (canvasElement) {
             ctxRef.current = canvasElement.getContext(
-              "2d"
+              "2d",
             ) as CanvasRenderingContext2D;
           }
         }}

@@ -20,12 +20,12 @@ export const Brush: React.FC = () => {
           aria-label="slider-ex-6"
           min={1}
           max={100}
-          onChange={(size) => {
-            setBrush((prev) => ({ ...prev, size }));
+          onChange={(width) => {
+            setBrush((prev) => ({ ...prev, width }));
           }}
         >
           <SliderMark
-            value={brush.size}
+            value={brush.width}
             textAlign="center"
             bg="blue.500"
             color="white"
@@ -33,7 +33,7 @@ export const Brush: React.FC = () => {
             ml="-5"
             w="12"
           >
-            {brush.size}%
+            {brush.width}%
           </SliderMark>
           <SliderTrack>
             <SliderFilledTrack />

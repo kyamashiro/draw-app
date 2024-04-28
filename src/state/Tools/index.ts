@@ -2,11 +2,11 @@ import { atom } from "jotai";
 import { Color, INITIAL_COLOR } from "components/Tools/ColorPicker";
 
 export interface Brush {
-  size: number;
+  width: number;
   color: Color;
 }
 export const brushAtom = atom({
-  size: 20,
+  width: 6,
   color: INITIAL_COLOR,
 });
 

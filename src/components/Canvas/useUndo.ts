@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { LineData } from "./index";
 
 export interface UseUndo {
   undo: () => void;
   redo: () => void;
-  snapshot: (path: Path2D) => void;
+  snapshot: (line: LineData) => void;
   clear: () => void;
   isDisableUndo: boolean;
   isDisableRedo: boolean;
@@ -12,8 +13,8 @@ export interface UseUndo {
 type Props = (ctx: CanvasRenderingContext2D) => UseUndo;
 
 export const useUndo: Props = (ctx) => {
-  const [undoDataStack, setUndoDataStack] = useState<Path2D[]>([]);
-  const [redoDataStack, setRedoDataStack] = useState<Path2D[]>([]);
+  const [undoDataStack, setUndoDataStack] = useState<LineData[]>([]);
+  const [redoDataStack, setRedoDataStack] = useState<LineData[]>([]);
 
   const undo = (): void => {
     console.log("undo");
@@ -23,8 +24,10 @@ export const useUndo: Props = (ctx) => {
     setRedoDataStack((prevState) => [...prevState, lastPath]);
     const newUndoDataStack = undoDataStack.slice(0, -1);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    newUndoDataStack.forEach((path) => {
-      ctx.stroke(path);
+    newUndoDataStack.forEach(({ shape, width, color }) => {
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.stroke(shape);
     });
     setUndoDataStack(newUndoDataStack);
   };
@@ -34,7 +37,9 @@ export const useUndo: Props = (ctx) => {
     if (redoDataStack.length <= 0) return;
 
     const lastUndoOperation = redoDataStack.slice(-1)[0];
-    ctx.stroke(lastUndoOperation);
+    ctx.lineWidth = lastUndoOperation.width;
+    ctx.strokeStyle = lastUndoOperation.color;
+    ctx.stroke(lastUndoOperation.shape);
     const newRedoDataStack = redoDataStack.slice(0, -1);
     setRedoDataStack(newRedoDataStack);
     setUndoDataStack((prevState) => [...prevState, lastUndoOperation]);
@@ -44,9 +49,9 @@ export const useUndo: Props = (ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  const snapshot = (path: Path2D): void => {
+  const snapshot = (line: LineData): void => {
     console.log("snapshot");
-    setUndoDataStack((prevState) => [...prevState, path]);
+    setUndoDataStack((prevState) => [...prevState, line]);
   };
 
   return {
