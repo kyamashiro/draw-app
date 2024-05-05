@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -13,7 +12,7 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { useAtom } from "jotai";
-import { brushAtom } from "state/Tools";
+import { brushAtom } from "@state/Tools";
 
 const COLORS = {
   black: "#000",

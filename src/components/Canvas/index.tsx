@@ -1,7 +1,7 @@
 import React, { MutableRefObject, useEffect, useState } from "react";
 import { useAtom } from "jotai";
-import { brushAtom, zoomAtom } from "state/Tools";
-import { Color } from "../Tools/ColorPicker";
+import { brushAtom, zoomAtom } from "@state/Tools";
+import { Color } from "@components/Tools/ColorPicker";
 
 export interface MousePosition {
   x: number;

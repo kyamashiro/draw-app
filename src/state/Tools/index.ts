@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { Color, INITIAL_COLOR } from "components/Tools/ColorPicker";
+import { Color, INITIAL_COLOR } from "@components/Tools/ColorPicker";
 
 export interface Brush {
   width: number;

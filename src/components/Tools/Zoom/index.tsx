@@ -1,7 +1,6 @@
 import { Box, Button, Flex, IconButton } from "@chakra-ui/react";
 import { BsZoomIn, BsZoomOut } from "react-icons/bs";
-import React from "react";
-import { zoomAtom } from "state/Tools";
+import { zoomAtom } from "@state/Tools";
 import { useAtom } from "jotai";
 
 const DEFAULT_SCALE = 1.0;

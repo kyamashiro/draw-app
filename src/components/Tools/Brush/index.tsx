@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useAtom } from "jotai";
-import { brushAtom } from "state/Tools";
-import { BrushWidthButton } from "./BrushWidthButton";
+import { brushAtom } from "@state/Tools";
+import {BrushWidthButton} from "@components/Tools/Brush/BrushWidthButton";
 
 export const Brush: React.FC = () => {
   const [brush, setBrush] = useAtom(brushAtom);

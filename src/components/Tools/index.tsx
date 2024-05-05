@@ -1,10 +1,10 @@
 import { Box, Flex, Stack } from "@chakra-ui/react";
 import React from "react";
-import { Brush } from "components/Tools/Brush";
-import { ColorPicker } from "components/Tools/ColorPicker";
-import { ClearButton } from "components/Tools/ClearButton";
-import { Control } from "components/Tools/Control";
-import { UseUndo } from "components/Canvas/useUndo";
+import { Brush } from "@components/Tools/Brush";
+import { ColorPicker } from "@components/Tools/ColorPicker";
+import { ClearButton } from "@components/Tools/ClearButton";
+import { Control } from "@components/Tools/Control";
+import { UseUndo } from "@components/Canvas/useUndo";
 
 interface Props {
   handlers: Omit<UseUndo, "snapshot">;
