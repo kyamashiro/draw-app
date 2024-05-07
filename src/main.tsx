@@ -6,11 +6,11 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { Provider } from "jotai";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ChakraProvider>
-      <Provider>
-        <App />
-      </Provider>
-    </ChakraProvider>
-  </React.StrictMode>,
+	<React.StrictMode>
+		<ChakraProvider>
+			<Provider>
+				<App />
+			</Provider>
+		</ChakraProvider>
+	</React.StrictMode>,
 );
