@@ -14,11 +14,11 @@ import { useAtom } from "jotai";
 import type React from "react";
 import { useEffect } from "react";
 
-export const Collaboration: React.FC = () => {
+export const AvatarPanel: React.FC = () => {
 	const [users, setUsers] = useAtom(usersAtom);
 	const [_, setCursors] = useAtom(cursorsAtom);
 	const [me, setMe] = useAtom(meAtom);
-
+	console.log(me);
 	const userNameChannel = supabase.channel("userName", {
 		config: {
 			presence: {
@@ -31,10 +31,9 @@ export const Collaboration: React.FC = () => {
 			setUsers((prev) => prev.set(payload.user.id, payload.user));
 			console.log("update", users);
 		})
-		.subscribe((status) => {
-			console.log("status", status);
-		});
+		.subscribe();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const room = supabase.channel("room", {
 			config: {
@@ -63,10 +62,7 @@ export const Collaboration: React.FC = () => {
 				if (status !== "SUBSCRIBED") {
 					return;
 				}
-
-				await room.track({
-					name: me.name,
-				});
+				await room.track(me);
 			});
 	}, []);
 
@@ -76,7 +72,7 @@ export const Collaboration: React.FC = () => {
 				position={"fixed"}
 				top={0}
 				right={5}
-				h={"120px"}
+				h={"150px"}
 				rounded="base"
 				boxShadow="md"
 				m={4}
@@ -87,9 +83,9 @@ export const Collaboration: React.FC = () => {
 			>
 				<>
 					<AvatarGroup size="md" max={5}>
-						{[...users].map(([key, { name }]) => (
-							<Avatar title={name} key={key} name={name} />
-						))}
+						{[...users].map(([key, { name, color }]) => {
+							return <Avatar title={name} key={key} name={name} bg={color} />;
+						})}
 					</AvatarGroup>
 					<Flex gap={4}>
 						<FormControl>

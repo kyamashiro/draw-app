@@ -31,7 +31,7 @@ export const ColorPicker = () => {
 
 	return (
 		<Popover variant="picker">
-			<Box>線の色</Box>
+			<Box>Color</Box>
 			<Flex
 				direction={"row"}
 				alignItems={"center"}
