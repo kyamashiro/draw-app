@@ -12,7 +12,7 @@ export const Brush: React.FC = () => {
 
 	return (
 		<Flex flexDirection={"column"} gap={4}>
-			<Box>線の太さ</Box>
+			<Box>Width</Box>
 			<Flex justifyContent={"space-between"}>
 				<BrushWidthButton
 					currentWidth={brush.width}

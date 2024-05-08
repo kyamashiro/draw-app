@@ -1,5 +1,5 @@
 import { Flex } from "@chakra-ui/react";
-import { Collaboration } from "@components/Avatar";
+import { AvatarPanel } from "@components/AvatarPanel";
 import { CursorLayer } from "@components/Canvas/CursorLayer";
 import { DrawLayer } from "@components/Canvas/DrawLayer";
 import { useCursor } from "@components/Canvas/useCursor.ts";
@@ -18,7 +18,7 @@ const App = () => {
 
 	return (
 		<Flex>
-			<Collaboration />
+			<AvatarPanel />
 			<Tools
 				handlers={{
 					undo,

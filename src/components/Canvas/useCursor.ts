@@ -3,7 +3,7 @@ import { drawCursor } from "@components/Canvas/CursorLayer/util.ts";
 import type { MousePosition } from "@components/Canvas/DrawLayer";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@constants/index.ts";
 import { type User, meAtom, usersAtom } from "@state/User";
-import { debounce } from "@utils/index.ts";
+import { throttle } from "@utils/index.ts";
 import { useAtomValue } from "jotai/index";
 import type React from "react";
 
@@ -33,11 +33,9 @@ export const useCursor: Props = (cursorLayerCtx) => {
 			},
 		},
 	});
-	channel.subscribe((status) => {
-		console.log("status", status);
-	});
+	channel.subscribe();
 
-	const trackMouseMove = debounce(
+	const trackMouseMove = throttle(
 		async (
 			e: React.MouseEvent<HTMLCanvasElement>,
 			ctx: CanvasRenderingContext2D,
@@ -54,11 +52,10 @@ export const useCursor: Props = (cursorLayerCtx) => {
 				},
 			});
 		},
-		30,
+		120,
 	);
 
 	channel.on<Cursor>("broadcast", { event: "cursor" }, ({ payload }) => {
-		console.log("recieve", payload.position);
 		cursors.set(payload.user.id, payload.position);
 		if (!cursorLayerCtx) return;
 		cursorLayerCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -66,7 +63,7 @@ export const useCursor: Props = (cursorLayerCtx) => {
 			const cursor = cursors.get(key);
 			const user = users.get(key);
 			if (cursor && user) {
-				drawMouseCursor(cursor.x, cursor.y, user);
+				requestAnimationFrame(() => drawMouseCursor(cursor.x, cursor.y, user));
 			}
 		});
 	});
@@ -75,7 +72,7 @@ export const useCursor: Props = (cursorLayerCtx) => {
 		cursorLayerCtx.beginPath();
 		drawCursor(cursorLayerCtx, x, y, x - 5, y - 20, [0, 2, -15, 2, -15, 6]);
 		cursorLayerCtx.closePath();
-		cursorLayerCtx.fillStyle = "gray"; // マウスの形の色
+		cursorLayerCtx.fillStyle = user.color; // マウスの形の色
 		cursorLayerCtx.fill();
 		cursorLayerCtx.font = "16px";
 		cursorLayerCtx.fillText(user.name, x + 10, y);
