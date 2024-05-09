@@ -1,25 +1,25 @@
 import { supabase } from "@client/supabase.ts";
 import type { LineData, MousePosition } from "@components/Canvas/DrawLayer";
+import { debounce } from "@utils/index.ts";
 
 export const useDraw = () => {
 	const channel = supabase.channel("draw-path");
-	channel.subscribe((status) => {
-		console.log("status", status);
-	});
+	channel.subscribe();
 
-	const publishDrawPath = async (
-		points: MousePosition[],
-		lineData: LineData,
-	) => {
-		await channel.send({
-			type: "broadcast",
-			event: "draw-path",
-			payload: JSON.stringify({
-				points,
-				lineData,
-			}),
-		});
-	};
+	const publishDrawPath = debounce(
+		async (points: MousePosition[], lineData: LineData) => {
+			console.log("draw-path");
+			await channel.send({
+				type: "broadcast",
+				event: "draw-path",
+				payload: JSON.stringify({
+					points,
+					lineData,
+				}),
+			});
+		},
+		300,
+	);
 
 	const reflectOtherDrawing = (ctx: CanvasRenderingContext2D) => {
 		channel.on("broadcast", { event: "draw-path" }, ({ payload }) => {
@@ -27,10 +27,10 @@ export const useDraw = () => {
 				points,
 				lineData,
 			}: { points: MousePosition[]; lineData: LineData } = JSON.parse(payload);
-			console.log(lineData);
 			const path = new Path2D();
-			let beginPoint: MousePosition | undefined;
+
 			const double: MousePosition[] = [];
+			let beginPoint: MousePosition | undefined;
 			for (const point of points) {
 				double.push(point);
 				beginPoint = traceLine(double, beginPoint, path);
@@ -38,6 +38,10 @@ export const useDraw = () => {
 
 			ctx.lineWidth = lineData.width;
 			ctx.strokeStyle = lineData.color;
+			ctx.shadowBlur = 0.5;
+			ctx.shadowColor = lineData.color;
+			ctx.lineJoin = "round";
+			ctx.lineCap = "round";
 			ctx.stroke(path);
 		});
 	};

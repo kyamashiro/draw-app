@@ -1,6 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { BrushWidthButton } from "@components/Tools/Brush/BrushWidthButton";
-import { brushAtom } from "@state/Tools";
+import { BRUSH_WIDTHS, brushAtom } from "@state/Tools";
 import { useAtom } from "jotai";
 import type React from "react";
 
@@ -17,17 +17,17 @@ export const Brush: React.FC = () => {
 				<BrushWidthButton
 					currentWidth={brush.width}
 					size={5}
-					handleClick={() => handleClick(5)}
+					handleClick={() => handleClick(BRUSH_WIDTHS.SMALL)}
 				/>
 				<BrushWidthButton
 					currentWidth={brush.width}
 					size={10}
-					handleClick={() => handleClick(10)}
+					handleClick={() => handleClick(BRUSH_WIDTHS.MEDIUM)}
 				/>
 				<BrushWidthButton
 					currentWidth={brush.width}
 					size={15}
-					handleClick={() => handleClick(15)}
+					handleClick={() => handleClick(BRUSH_WIDTHS.LARGE)}
 				/>
 			</Flex>
 		</Flex>
