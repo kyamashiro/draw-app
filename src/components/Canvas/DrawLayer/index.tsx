@@ -100,7 +100,6 @@ export const DrawLayer: React.FC<Props> = ({
 	const handleMouseUp = async () => {
 		if (isMouseLeftDown) {
 			snapshot(line);
-			await publishDrawPath(points, line);
 		}
 		setIsMouseLeftDown(false);
 		setIsMouseRightDown(false);
@@ -154,10 +153,11 @@ export const DrawLayer: React.FC<Props> = ({
 	let previousClientX: number;
 	let previousClientY: number;
 
-	const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+	const handleMouseMove = async (e: React.MouseEvent<HTMLCanvasElement>) => {
 		if (isMouseLeftDown) {
 			const { x, y } = getMousePosition(ctxRef.current.canvas, e);
 			points.push({ x, y });
+			await publishDrawPath(points, line);
 			beginPoint = drawLine(points, beginPoint, ctxRef.current, line.shape);
 		}
 

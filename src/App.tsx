@@ -6,6 +6,7 @@ import { useCursor } from "@components/Canvas/useCursor.ts";
 import { useUndo } from "@components/Canvas/useUndo.ts";
 import { Tools } from "@components/Tools";
 import { Zoom } from "@components/Tools/Zoom";
+import GitHubCorners from "@uiw/react-github-corners";
 import { useRef } from "react";
 
 const App = () => {
@@ -17,25 +18,32 @@ const App = () => {
 	const { trackMouseMove } = useCursor(cursorCtxRef.current);
 
 	return (
-		<Flex>
-			<AvatarPanel />
-			<Tools
-				handlers={{
-					undo,
-					redo,
-					clear,
-					isDisableUndo,
-					isDisableRedo,
-				}}
+		<>
+			<GitHubCorners
+				position="right"
+				style={{ position: "fixed", zIndex: 9999 }}
+				href="https://github.com/kyamashiro/draw-app"
 			/>
-			<Zoom />
-			<DrawLayer
-				ctxRef={ctxRef}
-				handleCursorMouseMove={trackMouseMove}
-				snapshot={snapshot}
-			/>
-			<CursorLayer cursorCtxRef={cursorCtxRef} />
-		</Flex>
+			<Flex>
+				<AvatarPanel />
+				<Tools
+					handlers={{
+						undo,
+						redo,
+						clear,
+						isDisableUndo,
+						isDisableRedo,
+					}}
+				/>
+				<Zoom />
+				<DrawLayer
+					ctxRef={ctxRef}
+					handleCursorMouseMove={trackMouseMove}
+					snapshot={snapshot}
+				/>
+				<CursorLayer cursorCtxRef={cursorCtxRef} />
+			</Flex>
+		</>
 	);
 };
 
