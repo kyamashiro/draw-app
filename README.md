@@ -10,6 +10,8 @@ https://kyamashiro.github.io/draw-app/
 * Color Change
 * Undo/Redo
 * Zoom in/Zoom out
+* User Cursor Sharing like Figma or Miro
+* Real-time Sharing of Drawn Lines
 
 [screen-recording.webm](https://user-images.githubusercontent.com/36433535/195965074-09a175d7-9e40-44f5-b9cb-1827f78b0a20.webm)
 
@@ -17,5 +19,5 @@ https://kyamashiro.github.io/draw-app/
 ## Setup
 ```sh
 bun install
-bun run start
+bun run dev
 ```
