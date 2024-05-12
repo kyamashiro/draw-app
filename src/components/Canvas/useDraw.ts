@@ -1,12 +1,12 @@
 import { supabase } from "@client/supabase.ts";
 import type { LineData, MousePosition } from "@components/Canvas/DrawLayer";
-import { debounce } from "@utils/index.ts";
+import { throttle } from "@utils/index.ts";
 
 export const useDraw = () => {
 	const channel = supabase.channel("draw-path");
 	channel.subscribe();
 
-	const publishDrawPath = debounce(
+	const publishDrawPath = throttle(
 		async (points: MousePosition[], lineData: LineData) => {
 			console.log("draw-path");
 			await channel.send({
